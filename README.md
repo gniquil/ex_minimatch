@@ -1,0 +1,4 @@
+ExMinimatch
+===========
+
+** TODO: Add description **

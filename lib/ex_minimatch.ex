@@ -1,6 +1,8 @@
 defmodule ExMinimatch do
   import ExBraceExpansion
 
+  import Dict, only: [merge: 2]
+
   @qmark "[^/]"
 
   @globstar :globstar
@@ -32,27 +34,32 @@ defmodule ExMinimatch do
     if options[:log] in [:info, :debug], do: IO.inspect(obj)
   end
 
+  # preserves the state
   def tap(state, sideback) do
     sideback.(state)
 
     state
   end
 
+  def transform(state, callback) do
+    callback.(state)
+  end
+
   def match(file, pattern) do
     # following is a list of all available options from minimatch.js
     # supported has [x] to it
     #
-    # debug
-    # nobrace
-    # noglobstar
+    # debug => log: :debug|:info
+    # nobrace [x]
+    # noglobstar [x]
     # dot [x]
-    # noext
+    # noext [x]
     # nocase [x]
-    # nonull [x]
+    # nonull
     # matchBase [x]
-    # nocomment
-    # nonegate
-    # flipNegate
+    # nocomment [x]
+    # nonegate [x]
+    # flipNegate [x]
 
     match(file, pattern, %{})
   end
@@ -73,8 +80,9 @@ defmodule ExMinimatch do
       noext: false,
       noglobstar: false,
       nocomment: false,
-      nobrace: false
-    } |> Dict.merge(options)
+      nobrace: false,
+      flip_negate: false
+    } |> merge(options)
 
     if short_circuit_comments(pattern, options) do
       false
@@ -236,7 +244,7 @@ defmodule ExMinimatch do
       false
     else
       state
-      |> Dict.merge(%{
+      |> merge(%{
           fi: fi + 1,
           ri: ri + 1,
           f: Enum.at(file_parts, fi + 1),
@@ -338,200 +346,216 @@ defmodule ExMinimatch do
 
   def parse(%{c: c, re: re, escaping: escaping} = state) when escaping and c in @re_specials do
     state
-    |> put_in([:re], re <> "\\" <> c)
-    |> put_in([:escaping], false)
+    |> merge(%{
+        re: re <> "\\" <> c,
+        escaping: false
+      })
     |> continue
   end
 
-  def parse(%{c: c} = state) when c == "/", do: state |> Dict.merge %{failed: true}
+  def parse(%{c: c} = state) when c == "/", do: state |> merge %{failed: true}
 
   def parse(%{c: c} = state) when c == "\\" do
     state
     |> clear_state_char
-    |> put_in([:escaping], true)
+    |> merge(%{escaping: true})
     |> continue
   end
 
   def parse(%{c: c, in_class: in_class, i: i, class_start: class_start, re: re} = state) when c in ["?", "*", "+", "@", "!"] and in_class do
     c = if c == "!" and i == class_start + 1, do: "^", else: c
     state
-    |> put_in([:re], re <> c)
+    |> merge(%{re: re <> c})
     |> continue
   end
 
-  def parse(%{c: c, options: options} = state) when c in ["?", "*", "+", "@", "!"] do
-    state = state
+  def parse(%{c: c, options: %{noext: noext}} = state) when c in ["?", "*", "+", "@", "!"] do
+    state
     |> clear_state_char
-    |> put_in([:state_char], c)
-
-    if options[:noext] do
-      state
-      |> clear_state_char
-      |> continue
-    else
-      state
-      |> continue
-    end
+    |> merge(%{state_char: c})
+    |> transform(fn state -> if noext, do: state |> clear_state_char, else: state end)
+    |> continue
   end
 
   def parse(%{c: c, in_class: in_class, re: re} = state) when c == "(" and in_class do
     state
-    |> put_in([:re], re <> "(")
+    |> merge(%{re: re <> "("})
     |> continue
   end
 
   def parse(%{c: c, state_char: state_char, re: re} = state) when c == "(" and state_char == "" do
     state
-    |> put_in([:re], re <> "\\(")
+    |> merge(%{re: re <> "\\("})
     |> continue
   end
 
   def parse(%{c: c, state_char: state_char, pattern_list_stack: pattern_list_stack, re: re, i: i} = state) when c == "(" do
     state
-    |> put_in([:pl_type], state_char)
-    |> put_in([:pattern_list_stack], [%{type: state_char, start: i - 1, re_start: String.length(re)} | pattern_list_stack])
-    |> put_in([:re], re <> (if state_char == "!", do: "(?:(?!", else: "(?:"))
-    |> put_in([:state_char], "")
+    |> merge(%{
+        pl_type: state_char,
+        pattern_list_stack: [%{type: state_char, start: i - 1, re_start: String.length(re)} | pattern_list_stack],
+        re: re <> (if state_char == "!", do: "(?:(?!", else: "(?:"),
+        state_char: ""
+      })
     |> continue
   end
 
   def parse(%{c: c, in_class: in_class, pattern_list_stack: pattern_list_stack, re: re} = state) when c == ")" and (in_class or length(pattern_list_stack) == 0) do
     state
-    |> put_in([:re], re <> "\\)")
+    |> merge(%{re: re <> "\\)"})
     |> continue
   end
 
-  def parse(%{c: c, pattern_list_stack: pattern_list_stack} = state) when c == ")" do
-
-    state = state
-    |> clear_state_char
-    |> put_in([:has_magic], true)
-
-    %{re: re} = state
-
-    new_re = re <> ")"
-
-    [pattern_list_stack_hd | new_pattern_list_stack] = pattern_list_stack
-    new_pl_type = pattern_list_stack_hd[:type]
-
-    new_re = cond do
-      new_pl_type == "!" ->
-        new_re <> "[^/]*?)"
-      new_pl_type in ["*", "?", "+"] ->
-        new_re <> new_pl_type
-      true ->
-        new_re
-    end
-
+  def parse(%{c: c} = state) when c == ")" do
     state
-    |> put_in([:re], new_re)
-    |> put_in([:pl_type], new_pl_type)
-    |> put_in([:pattern_list_stack], new_pattern_list_stack)
+    |> clear_state_char
+    |> merge(%{has_magic: true})
+    |> transform(fn %{pattern_list_stack: pattern_list_stack, re: re} = state ->
+      new_re = re <> ")"
+
+      [pattern_list_stack_hd | new_pattern_list_stack] = pattern_list_stack
+
+      new_pl_type = pattern_list_stack_hd[:type]
+
+      new_re = cond do
+        new_pl_type == "!" ->
+          new_re <> "[^/]*?)"
+        new_pl_type in ["*", "?", "+"] ->
+          new_re <> new_pl_type
+        true ->
+          new_re
+      end
+
+      state
+      |> merge(%{
+          re: new_re,
+          pl_type: new_pl_type,
+          pattern_list_stack: new_pattern_list_stack
+        })
+    end)
     |> continue
   end
 
   def parse(%{c: c, in_class: in_class, pattern_list_stack: pattern_list_stack, escaping: escaping, re: re} = state) when c == "|" and (in_class or length(pattern_list_stack) == 0 or escaping) do
     state
-    |> put_in([:re], re <> "\\|")
-    |> put_in([:escaping], false)
+    |> merge(%{
+        re: re <> "\\|",
+        escaping: false
+      })
     |> continue
   end
 
   def parse(%{c: c} = state) when c == "|" do
-    state = state
-    |> clear_state_char
-
-    %{re: re} = state
-
     state
-    |> put_in([:re], re <> "|")
+    |> clear_state_char
+    |> transform(fn %{re: re} = state ->
+        state
+        |> merge(%{re: re <> "|"})
+      end)
     |> continue
   end
 
   def parse(%{c: c, in_class: in_class} = state) when c == "[" and in_class do
-    state = state
-    |> clear_state_char
-
-    %{re: re} = state
-
     state
-    |> put_in([:re], re <> "\\" <> c)
+    |> clear_state_char
+    |> transform(fn %{re: re} = state ->
+        state
+        |> merge(%{re: re <> "\\" <> c})
+      end)
     |> continue
   end
 
   def parse(%{c: c, i: i} = state) when c == "[" do
-    state = state
-    |> clear_state_char
-
-    %{re: re} = state
-
     state
-    |> put_in([:in_class], true)
-    |> put_in([:class_start], i)
-    |> put_in([:re_class_start], String.length(re))
-    |> put_in([:re], re <> c)
+    |> clear_state_char
+    |> transform(fn %{re: re} = state ->
+        state
+        |> merge(%{
+            in_class: true,
+            class_start: i,
+            re_class_start: String.length(re),
+            re: re <> c
+          })
+      end)
     |> continue
   end
 
   def parse(%{c: c, re: re, in_class: in_class, i: i, class_start: class_start} = state) when c == "]" and (i == class_start + 1 or not in_class) do
     state
-    |> put_in([:re], re <> "\\" <> c)
-    |> put_in([:escaping], false)
+    |> merge(%{
+        re: re <> "\\" <> c,
+        escaping: false
+      })
     |> continue
   end
 
-  def parse(%{c: c, re: re, in_class: in_class, i: i, class_start: class_start, re_class_start: re_class_start, pattern: pattern, has_magic: has_magic} = state) when c == "]" and in_class do
+  def parse(%{c: c, re: re, in_class: in_class} = state) when c == "]" and in_class do
+    %{
+      pattern: pattern,
+      class_start: class_start,
+      i: i,
+      re_class_start: re_class_start,
+      has_magic: has_magic
+    } = state
+
     cs = String.slice(pattern, (class_start + 1)..(i - 1))
 
-    case Regex.compile("[" <> cs <> "]") do
+    state_changes = case Regex.compile("[" <> cs <> "]") do
       {:error, _} ->
         {sub_re, sub_has_magic} = parse_glob_to_re(cs, state[:options], true)
 
-        state
-        |> put_in([:re], String.slice(re, 0, re_class_start) <> "\\[" <> sub_re <> "\\]")
-        |> put_in([:has_magic], (has_magic or sub_has_magic))
-        |> put_in([:in_class], false)
-        |> continue
+        %{
+          re: String.slice(re, 0, re_class_start) <> "\\[" <> sub_re <> "\\]",
+          has_magic: has_magic or sub_has_magic,
+          in_class: false
+        }
       _ ->
-        state
-        |> put_in([:has_magic], true)
-        |> put_in([:in_class], false)
-        |> put_in([:re], re <> c)
-        |> continue
+        %{
+          re: re <> c,
+          has_magic: true,
+          in_class: false
+        }
     end
+
+    state
+    |> merge(state_changes)
+    |> continue
   end
 
   def parse(%{escaping: escaping, c: c} = state) when escaping do
-    state = state
-    |> clear_state_char
-
-    %{re: re} = state
-
     state
-    |> put_in([:escaping], false)
-    |> put_in([:re], re <> c)
+    |> clear_state_char
+    |> transform(fn %{re: re} = state ->
+        state
+        |> merge(%{
+            escaping: false,
+            re: re <> c
+          })
+      end)
     |> continue
   end
 
   def parse(%{c: c, in_class: in_class} = state) when c in @re_specials and not (c == "^" and in_class) do
-    state = state
-    |> clear_state_char
-
-    %{re: re} = state
-
     state
-    |> put_in([:re], re <> "\\" <> c)
+    |> clear_state_char
+    |> transform(fn %{re: re} = state ->
+        state
+        |> merge(%{
+            re: re <> "\\" <> c
+          })
+      end)
     |> continue
   end
 
   def parse(%{c: c} = state) do
-    state = state
-    |> clear_state_char
-
-    %{re: re} = state
-
     state
-    |> put_in([:re], re <> c)
+    |> clear_state_char
+    |> transform(fn %{re: re} = state ->
+        state
+        |> merge(%{
+            re: re <> c
+          })
+      end)
     |> continue
   end
 
@@ -553,7 +577,7 @@ defmodule ExMinimatch do
     {sub_re, sub_has_magic} = parse_glob_to_re(cs, state[:options], true)
 
     state
-    |> Dict.merge(%{
+    |> merge(%{
         re: String.slice(re, 0, re_class_start) <> "\\[" <> sub_re,
         has_magic: has_magic or sub_has_magic
       })
@@ -591,7 +615,7 @@ defmodule ExMinimatch do
     end
 
     state
-    |> Dict.merge(%{
+    |> merge(%{
         has_magic: true,
         re: String.slice(re, 0, pl[:re_start]) <> t <> "\\(" <> tail,
         pattern_list_stack: new_pattern_list_stack
@@ -605,9 +629,11 @@ defmodule ExMinimatch do
   def handle_trailing_things(%{failed: failed} = state) when failed, do: state
 
   def handle_trailing_things(%{escaping: escaping, re: re} = state) when escaping do
+    debug {"handle_trailing_things", escaping, re}, state[:options]
+
     state
     |> clear_state_char
-    |> Dict.merge(%{
+    |> merge(%{
         re: re <> "\\\\"
       })
   end
@@ -618,6 +644,8 @@ defmodule ExMinimatch do
   def handle_dot_start(%{failed: failed} = state) when failed, do: state
 
   def handle_dot_start(%{re: re, has_magic: has_magic, pattern_start: pattern_start} = state) do
+    debug {"handle_dot_start", re, has_magic, pattern_start}, state[:options]
+
     add_pattern_start = String.first(re) in [".", "[", "("]
 
     new_re = if re != "" and has_magic, do: "(?=.)" <> re, else: re
@@ -625,7 +653,7 @@ defmodule ExMinimatch do
     new_re = if add_pattern_start, do: pattern_start <> new_re, else: new_re
 
     state
-    |> Dict.merge %{ re: new_re }
+    |> merge(%{ re: new_re })
   end
 
 
@@ -641,8 +669,6 @@ defmodule ExMinimatch do
   def finish_parse(%{options: options, re: re}) do
     flags = if options[:nocase], do: "i", else: ""
 
-    # result
-
     case Regex.compile("^#{re}$", flags) do
       {:ok, result} ->
         result
@@ -655,37 +681,42 @@ defmodule ExMinimatch do
     Regex.replace(~r/\\(.)/, s, fn _, a -> a end)
   end
 
-  def clear_state_char(%{state_char: state_char} = state) when state_char == "" do
-    state
-  end
+  def clear_state_char(%{state_char: state_char} = state) when state_char == "", do: state
 
   def clear_state_char(%{state_char: state_char, re: re} = state) do
-    case state_char do
-      "*" ->
-        state
-        |> put_in([:re], re <> @star)
-        |> put_in([:has_magic], true)
-      "?" ->
-        state
-        |> put_in([:re], re <> @qmark)
-        |> put_in([:has_magic], true)
-      _ ->
-        state
-        |> put_in([:re], re <> "\\" <> state_char)
-    end
-    |> put_in([:state_char], "")
+    state
+    |> merge(case state_char do
+        "*" ->
+          %{
+            re: re <> @star,
+            has_magic: true,
+            state_char: ""
+          }
+        "?" ->
+          %{
+            re: re <> @qmark,
+            has_magic: true,
+            state_char: ""
+          }
+        _ ->
+          %{
+            re: re <> "\\" <> state_char,
+            state_char: ""
+          }
+      end)
   end
 
   def move_to_next(%{i: i, pattern: pattern} = state) do
     state
-    |> put_in([:i], i + 1)
-    |> put_in([:c], String.at(pattern, i + 1))
+    |> merge(%{
+        i: i + 1,
+        c: String.at(pattern, i + 1)
+      })
   end
 
   def continue(state) do
-    info {"continue", state}, state[:options]
-
     state
+    |> tap(fn %{options: options} = state -> info({"continue", state}, options) end)
     |> move_to_next
     |> parse
   end

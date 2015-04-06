@@ -31,7 +31,7 @@ defmodule GithubIssuesTest do
   end
 
 
-  IO.puts "Test cases for https://github.com/isaacs/minimatch/issues/59"
+  IO.puts "Test cases for: https://github.com/isaacs/minimatch/issues/59"
 
   test "[z-a]" do
     assert @files |> filter(fn file -> match(file, "[z-a]") end) |> sort == []

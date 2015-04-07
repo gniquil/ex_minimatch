@@ -64,7 +64,7 @@ Disable `**` matching against multiple folder names.
 Allow patterns to match filenames starting with a period, even if the pattern
 does not explicitly have a period in that spot.
 
-Note that by default, a/**/b will not match a/.d/b, unless dot is set, e.g.
+Note that by default, `a/**/b` will not match `a/.d/b`, unless dot is set, e.g.
 `match("a/**/b", "a/.d/b", %{dot: true})`
 
 ### noext

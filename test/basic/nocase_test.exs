@@ -1,20 +1,32 @@
 defmodule NocaseTest do
   use ExUnit.Case
 
-  import ExMinimatch, only: [match: 2, match: 3]
-  import Enum, only: [filter: 2, sort: 1]
+  import ExMinimatch, only: [match: 2, match: 3, compile: 2, fnmatch: 2, fnfilter: 2]
+  import Enum, only: [sort: 1]
 
   IO.puts "Test cases for: nocase"
 
   test "XYZ" do
-    assert ["xYz", "ABC", "IjK"] |> filter(fn file -> match(file, "XYZ", %{nocase: true}) end) |> sort == ["xYz"]
+    matcher = compile("XYZ", %{nocase: true})
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)XYZ)$", "i")
+
+    assert ["xYz", "ABC", "IjK"] |> fnfilter(matcher) |> sort == ["xYz"]
   end
 
   test "ab*" do
-    assert ["xYz", "ABC", "IjK"] |> filter(fn file -> match(file, "ab*", %{nocase: true}) end) |> sort == ["ABC"]
+    matcher = compile("ab*", %{nocase: true})
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)ab[^/]*?)$", "i")
+
+    assert ["xYz", "ABC", "IjK"] |> fnfilter(matcher) |> sort == ["ABC"]
   end
 
   test "[ia]?[ck]" do
-    assert ["xYz", "ABC", "IjK"] |> filter(fn file -> match(file, "[ia]?[ck]", %{nocase: true}) end) |> sort == ["ABC", "IjK"]
+    matcher = compile("[ia]?[ck]", %{nocase: true})
+
+    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[ia][^/][ck])$", "i")
+
+    assert ["xYz", "ABC", "IjK"] |> fnfilter(matcher) |> sort == ["ABC", "IjK"]
   end
 end

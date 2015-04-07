@@ -1,8 +1,8 @@
 defmodule BashGlobTest do
   use ExUnit.Case
 
-  import ExMinimatch, only: [match: 2, match: 3]
-  import Enum, only: [filter: 2, sort: 1]
+  import ExMinimatch, only: [match: 2, match: 3, compile: 1, fnmatch: 2, fnfilter: 2]
+  import Enum, only: [sort: 1]
 
   IO.puts "Test cases for: http://www.bashcookbook.com/bashinfo/source/bash-1.14.7/tests/glob-test"
 
@@ -25,11 +25,19 @@ defmodule BashGlobTest do
   ]
 
   test "a*" do
-    assert @files |> filter(fn file -> match(file, "a*") end) |> sort == ["a", "abc", "abd", "abe"]
+    matcher = compile("a*")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["a", "abc", "abd", "abe"]
   end
 
   test "X*" do
-    assert @files |> filter(fn file -> match(file, "X*") end) |> sort == []
+    matcher = compile("X*")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)X[^/]*?)$")
+
+    assert @files |> fnfilter(matcher) |> sort == []
   end
 
   # isaacs: Slightly different than bash/sh/ksh
@@ -37,34 +45,66 @@ defmodule BashGlobTest do
   # but it does make it get treated as a literal star
 
   test "\\*" do
-    assert @files |> filter(fn file -> match(file, "\\*") end) |> sort == []
+    matcher = compile("\\*")
+
+    # assert matcher.regex == Regex.compile!("^(?:\\*)$")
+
+    assert @files |> fnfilter(matcher) |> sort == []
   end
 
   test "\\**" do
-    assert @files |> filter(fn file -> match(file, "\\**") end) |> sort == []
+    matcher = compile("\\**")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)\\*[^/]*?)$")
+
+    assert @files |> fnfilter(matcher) |> sort == []
   end
 
   test "\\*\\*" do
-    assert @files |> filter(fn file -> match(file, "\\*\\*") end) |> sort == []
+    matcher = compile("\\*\\*")
+
+    # assert matcher.regex == Regex.compile!("^(?:\\*\\*)$")
+
+    assert @files |> fnfilter(matcher) |> sort == []
   end
 
   test "b*/" do
-    assert @files |> filter(fn file -> match(file, "b*/") end) |> sort == ["bdir/"]
+    matcher = compile("b*/")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)b[^/]*?\\/)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["bdir/"]
   end
 
   test "c*" do
-    assert @files |> filter(fn file -> match(file, "c*") end) |> sort == ["c", "ca", "cb"]
+    matcher = compile("c*")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)c[^/]*?)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["c", "ca", "cb"]
   end
 
   test "**" do
-    assert @files |> filter(fn file -> match(file, "**") end) |> sort == @files |> sort
+    matcher = compile("**")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?:(?!(?:\\/|^)\\.).)*?)$")
+
+    assert @files |> fnfilter(matcher) |> sort == @files |> sort
   end
 
   test "\\.\\./*/" do
-    assert @files |> filter(fn file -> match(file, "\\.\\./*/") end) |> sort == []
+    matcher = compile("\\.\\./*/")
+
+    # assert matcher.regex == Regex.compile!("^(?:\\.\\.\\/(?!\\.)(?=.)[^/]*?\\/)$")
+
+    assert @files |> fnfilter(matcher) |> sort == []
   end
 
   test "s/\\..*//" do
-    assert @files |> filter(fn file -> match(file, "s/\\..*//") end) |> sort == []
+    matcher = compile("s/\\..*//")
+
+    # assert matcher.regex == Regex.compile!("^(?:s\\/(?=.)\\.\\.[^/]*?\\/)$")
+
+    assert @files |> fnfilter(matcher) |> sort == []
   end
 end

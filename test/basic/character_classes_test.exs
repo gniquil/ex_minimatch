@@ -1,8 +1,8 @@
 defmodule CharacterClassesTest do
   use ExUnit.Case
 
-  import ExMinimatch, only: [match: 2, match: 3]
-  import Enum, only: [filter: 2, sort: 1]
+  import ExMinimatch, only: [match: 2, match: 3, compile: 1, fnmatch: 2, fnfilter: 2]
+  import Enum, only: [sort: 1]
 
   IO.puts "Test cases for: character classes"
 
@@ -24,78 +24,131 @@ defmodule CharacterClassesTest do
     "bdir/cfile"
   ]
 
-  test "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\\1/" do
-    assert @files |> filter(fn file -> match(file, "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\\1/") end) |> sort == []
-  end
-
-  test "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\1/" do
-    assert @files |> filter(fn file -> match(file, "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\1/") end) |> sort == []
-  end
-
   test "[a-c]b*" do
-    assert @files |> filter(fn file -> match(file, "[a-c]b*") end) |> sort == ["abc", "abd", "abe", "bb", "cb"] |> sort
+    matcher = compile("[a-c]b*")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[a-c]b[^/]*?)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["abc", "abd", "abe", "bb", "cb"] |> sort
   end
 
   test "[a-y]*[^c]" do
-    assert @files |> filter(fn file -> match(file, "[a-y]*[^c]") end) |> sort == ["abd", "abe", "bb", "bcd", "bdir/", "ca", "cb", "dd", "de"] |> sort
+    matcher = compile("[a-y]*[^c]")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[a-y][^/]*?[^c])$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["abd", "abe", "bb", "bcd", "bdir/", "ca", "cb", "dd", "de"] |> sort
   end
 
   test "a*[^c]" do
-    assert @files |> filter(fn file -> match(file, "a*[^c]") end) |> sort == ["abd", "abe"] |> sort
+    matcher = compile("a*[^c]")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^c])$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["abd", "abe"] |> sort
   end
 
   @files @files ++ ["a-b", "aXb"]
 
   test "a[X-]b" do
-    assert @files |> filter(fn file -> match(file, "a[X-]b") end) |> sort == ["a-b", "aXb"] |> sort
+    matcher = compile("a[X-]b")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[X-]b)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["a-b", "aXb"] |> sort
   end
 
   @files @files ++ [".x", ".y"]
 
   test "[^a-c]*" do
-    assert @files |> filter(fn file -> match(file, "[^a-c]*") end) |> sort == ["d", "dd", "de"] |> sort
+    matcher = compile("[^a-c]*")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^a-c][^/]*?)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["d", "dd", "de"] |> sort
   end
 
   @files @files ++ ["a*b/", "a*b/ooo"]
 
   test "a\\*b/*" do
-    assert @files |> filter(fn file -> match(file, "a\\*b/*") end) |> sort == ["a*b/ooo"] |> sort
+    matcher = compile("a\\*b/*")
+
+    # assert matcher.regex == Regex.compile!("^(?:a\\*b\\/(?!\\.)(?=.)[^/]*?)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["a*b/ooo"] |> sort
   end
 
   test "a\\*?/*" do
-    assert @files |> filter(fn file -> match(file, "a\\*?/*") end) |> sort == ["a*b/ooo"] |> sort
+    matcher = compile("a\\*?/*")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)a\\*[^/]\\/(?!\\.)(?=.)[^/]*?)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["a*b/ooo"] |> sort
   end
 
+
   test "*\\\\!*" do
-    assert ["echo !7"] |> filter(fn file -> match(file, "*\\\\!*") end) |> sort == []
+    matcher = compile("*\\\\!*")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/]*?\\\\\\![^/]*?)$")
+
+    assert ["echo !7"] |> fnfilter(matcher) |> sort == []
   end
 
   test "*\\!*" do
-    assert ["echo !7"] |> filter(fn file -> match(file, "*\\!*") end) |> sort == ["echo !7"]
+    matcher = compile("*\\!*")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/]*?\\![^/]*?)$")
+
+    assert ["echo !7"] |> fnfilter(matcher) |> sort == ["echo !7"]
   end
 
   test "*.\\*" do
-    assert ["r.*"] |> filter(fn file -> match(file, "*.\\*") end) |> sort == ["r.*"]
+    matcher = compile("*.\\*")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/]*?\\.\\*)$")
+
+    assert ["r.*"] |> fnfilter(matcher) |> sort == ["r.*"]
   end
 
   test "a[b]c" do
-    assert @files |> filter(fn file -> match(file, "a[b]c") end) |> sort == ["abc"] |> sort
+    matcher = compile("a[b]c")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[b]c)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["abc"] |> sort
   end
 
   test "a[\\b]c" do
-    assert @files |> filter(fn file -> match(file, "a[\\b]c") end) |> sort == ["abc"] |> sort
+    matcher = compile("a[\\b]c")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[b]c)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["abc"] |> sort
   end
 
   test "a?c" do
-    assert @files |> filter(fn file -> match(file, "a?c") end) |> sort == ["abc"] |> sort
+    matcher = compile("a?c")
+
+    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]c)$")
+
+    assert @files |> fnfilter(matcher) |> sort == ["abc"] |> sort
   end
 
   test "a\\*c" do
-    assert ["abc"] |> filter(fn file -> match(file, "a\\*c") end) |> sort == []
+    matcher = compile("a\\*c")
+
+    # assert matcher.regex == Regex.compile!("^(?:a\\*c)$")
+
+    assert ["abc"] |> fnfilter(matcher) |> sort == []
   end
 
   test "empty (literally)" do
-    assert [""] |> filter(fn file -> match(file, "") end) |> sort == [""] |> sort
+    matcher = compile("")
+
+    # assert matcher.regex == false
+
+    assert [""] |> fnfilter(matcher) |> sort == [""] |> sort
   end
 
 end

@@ -1,8 +1,8 @@
 defmodule LarryCrashesBashesTest do
   use ExUnit.Case
 
-  import ExMinimatch, only: [match: 2, match: 3]
-  import Enum, only: [filter: 2, sort: 1]
+  import ExMinimatch, only: [match: 2, match: 3, compile: 1, fnmatch: 2, fnfilter: 2]
+  import Enum, only: [sort: 1]
 
   IO.puts "Test cases for: legendary larry crashes bashes"
 
@@ -25,10 +25,21 @@ defmodule LarryCrashesBashesTest do
   ]
 
   test "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\\1/" do
-    assert @files |> filter(fn file -> match(file, "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\\1/") end) |> sort == []
+    matcher = compile("/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\\1/")
+
+    # assert matcher.regex == Regex.compile!("^(?:\\/\\^root:\\/\\{s\\/(?=.)\\^[^:][^/]*?:[^:][^/]*?:\\([^:]\\)[^/]*?\\.[^/]*?\\$\\/1\\/)$")
+
+    assert @files |> fnfilter(matcher) |> sort == []
   end
 
   test "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\1/" do
-    assert @files |> filter(fn file -> match(file, "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\1/") end) |> sort == []
+    matcher = compile("/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\1/")
+
+    # TODO, find out what the unicode x{0001} means
+    # assert matcher.regex == Regex.compile!("^(?:\\/\\^root:\\/\\{s\\/(?=.)\\^[^:][^/]*?:[^:][^/]*?:\\([^:]\\)[^/]*?\\.[^/]*?\\$\\/\x{0001}\\/)$")
+
+    # assert matcher.regex == Regex.compile!("^(?:\\/\\^root:\\/\\{s\\/(?=.)\\^[^:][^/]*?:[^:][^/]*?:\\([^:]\\)[^/]*?\\.[^/]*?\\$\\/\1\\/)$")
+
+    assert @files |> fnfilter(matcher) |> sort == []
   end
 end

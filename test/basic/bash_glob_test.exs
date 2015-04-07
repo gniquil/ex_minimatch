@@ -4,7 +4,7 @@ defmodule BashGlobTest do
   import ExMinimatch
   import Enum, only: [sort: 1]
 
-  IO.puts "Test cases for: http://www.bashcookbook.com/bashinfo/source/bash-1.14.7/tests/glob-test"
+  # IO.puts "Test cases for: http://www.bashcookbook.com/bashinfo/source/bash-1.14.7/tests/glob-test"
 
   @files [
     "a",

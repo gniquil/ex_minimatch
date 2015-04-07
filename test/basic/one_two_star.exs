@@ -1,24 +1,16 @@
 defmodule OneTwoStarTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
-  import ExMinimatch, only: [match: 2, match: 3, prepare: 1, fnmatch: 2, fnfilter: 2]
+  import ExMinimatch
   import Enum, only: [sort: 1]
 
-  IO.puts "Test cases for: onestar/twostar"
+  # IO.puts "Test cases for: onestar/twostar"
 
   test "{/*,*}" do
-    matcher = prepare("{/*,*}")
-
-    # assert matcher.regex == Regex.compile!("^(?:\\/(?!\\.)(?=.)[^/]*?|(?!\\.)(?=.)[^/]*?)$")
-
-    assert ["/asdf/asdf/asdf"] |> fnfilter(matcher) |> sort == []
+    assert ["/asdf/asdf/asdf"] |> filter("{/*,*}") |> sort == []
   end
 
   test "{/?,*}" do
-    matcher = prepare("{/?,*}")
-
-    # assert matcher.regex == Regex.compile!("^(?:\\/(?!\\.)(?=.)[^/]|(?!\\.)(?=.)[^/]*?)$")
-
-    assert ["/a", "/b/b", "/a/b/c", "bb"] |> fnfilter(matcher) |> sort == ["/a", "bb"]
+    assert ["/a", "/b/b", "/a/b/c", "bb"] |> filter("{/?,*}") |> sort == ["/a", "bb"]
   end
 end

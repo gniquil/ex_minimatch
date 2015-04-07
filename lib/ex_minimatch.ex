@@ -1,12 +1,19 @@
 defmodule ExMinimatch do
   import ExMinimatch.Compiler
+  import ExMinimatch.Matcher
 
+  @doc """
+  return compiles a %ExMinimatcher{} struct, which can be used to match files
+
+  This function saves compilation time if the same glob pattern will be used to
+  repeatedly match files.
+  """
   def compile(glob), do: compile(glob, %{})
   def compile(glob, options) do
     options = %{
       dot: false,
       nocase: false,
-      match_base: false, #this is not supported as the regexp version does NOT support this, and the non-regex version has too many inconsistencies with the regex version.
+      match_base: false,
       nonegate: false,
       noext: false,
       noglobstar: false,
@@ -18,12 +25,10 @@ defmodule ExMinimatch do
     compile_matcher(glob, options)
   end
 
-  def fnmatch(%{regex_parts_set: regex_parts_set}, "") when regex_parts_set == [], do: true
-  def fnmatch(%{regex_parts_set: regex_parts_set}, _file) when not regex_parts_set, do: false
+  def fnmatch(%ExMinimatcher{pattern: pattern}, "") when pattern == [], do: true
+  def fnmatch(%ExMinimatcher{pattern: pattern}, _file) when not pattern, do: false
   # def fnmatch(%{regex: regex}, file), do: Regex.match?(regex, file)
-  def fnmatch(%{regex_parts_set: regex_parts_set, negate: negate, options: options}, file) do
-    match_file(file, regex_parts_set, negate, options)
-  end
+  def fnmatch(matcher, file), do: match_file(file, matcher)
 
   @doc """
   return true if the file matches the pattern

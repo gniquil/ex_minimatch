@@ -1,10 +1,10 @@
 defmodule LarryCrashesBashesTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
-  import ExMinimatch, only: [match: 2, match: 3, compile: 1, fnmatch: 2, fnfilter: 2]
+  import ExMinimatch
   import Enum, only: [sort: 1]
 
-  IO.puts "Test cases for: legendary larry crashes bashes"
+  # IO.puts "Test cases for: legendary larry crashes bashes"
 
   @files [
     "a",
@@ -25,21 +25,10 @@ defmodule LarryCrashesBashesTest do
   ]
 
   test "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\\1/" do
-    matcher = compile("/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\\1/")
-
-    # assert matcher.regex == Regex.compile!("^(?:\\/\\^root:\\/\\{s\\/(?=.)\\^[^:][^/]*?:[^:][^/]*?:\\([^:]\\)[^/]*?\\.[^/]*?\\$\\/1\\/)$")
-
-    assert @files |> fnfilter(matcher) |> sort == []
+    assert @files |> filter("/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\\1/") |> sort == []
   end
 
   test "/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\1/" do
-    matcher = compile("/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\1/")
-
-    # TODO, find out what the unicode x{0001} means
-    # assert matcher.regex == Regex.compile!("^(?:\\/\\^root:\\/\\{s\\/(?=.)\\^[^:][^/]*?:[^:][^/]*?:\\([^:]\\)[^/]*?\\.[^/]*?\\$\\/\x{0001}\\/)$")
-
-    # assert matcher.regex == Regex.compile!("^(?:\\/\\^root:\\/\\{s\\/(?=.)\\^[^:][^/]*?:[^:][^/]*?:\\([^:]\\)[^/]*?\\.[^/]*?\\$\\/\1\\/)$")
-
-    assert @files |> fnfilter(matcher) |> sort == []
+    assert @files |> filter("/^root:/{s/^[^:]*:[^:]*:\([^:]*\).*$/\1/") |> sort == []
   end
 end

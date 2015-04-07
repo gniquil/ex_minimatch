@@ -1,6 +1,4 @@
 defmodule ExMinimatch.Helper do
-  import Dict, only: [merge: 2]
-
   def debug(obj, options) do
     if options[:log] in [:debug], do: IO.inspect(obj)
   end
@@ -31,10 +29,4 @@ defmodule ExMinimatch.Helper do
 
   def slice(a, i, l) when is_binary(a), do: String.slice(a, i, l)
   def slice(a, i, l), do: Enum.slice(a, i, l)
-
-  # minimatch.js supports 2 types of matching, one's regex based, one is below
-  # here we don't support the 2nd type as there are too many inconsistencies
-  # between the versions.
-
-
 end

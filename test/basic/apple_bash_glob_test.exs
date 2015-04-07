@@ -1,10 +1,10 @@
 defmodule AppleBashGlobTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
-  import ExMinimatch, only: [match: 2, match: 3, compile: 1, fnmatch: 2, fnfilter: 2]
+  import ExMinimatch
   import Enum, only: [sort: 1]
 
-  IO.puts "Test cases for: http://www.opensource.apple.com/source/bash/bash-23/bash/tests/glob-test"
+  # IO.puts "Test cases for: http://www.opensource.apple.com/source/bash/bash-23/bash/tests/glob-test"
 
   @files [
     "a",
@@ -34,203 +34,103 @@ defmodule AppleBashGlobTest do
   ]
 
   test "*/man*/bash.*" do
-    matcher = compile("*/man*/bash.*")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/]*?\\/(?=.)man[^/]*?\\/(?=.)bash\\.[^/]*?)$")
-
-    assert @files |> fnfilter(matcher) |> sort == ["man/man1/bash.1"] |> sort
+    assert @files |> filter("*/man*/bash.*") |> sort == ["man/man1/bash.1"] |> sort
   end
 
   test "man/man1/bash.1" do
-    matcher = compile("man/man1/bash.1")
-
-    # assert matcher.regex == Regex.compile!("^(?:man\\/man1\\/bash\\.1)$")
-
-    assert @files |> fnfilter(matcher) |> sort == ["man/man1/bash.1"]
+    assert @files |> filter("man/man1/bash.1") |> sort == ["man/man1/bash.1"]
   end
 
   test "a***c" do
-    matcher = compile("a***c")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^/]*?[^/]*?c)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("a***c") |> sort == ["abc"]
   end
 
   test "a*****?c" do
-    matcher = compile("a*****?c")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]c)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("a*****?c") |> sort == ["abc"]
   end
 
   test "?*****??" do
-    matcher = compile("?*****??")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/][^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/][^/])$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("?*****??") |> sort == ["abc"]
   end
 
   test "*****??" do
-    matcher = compile("*****??")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/][^/])$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("*****??") |> sort == ["abc"]
   end
 
   test "?*****?c" do
-    matcher = compile("?*****?c")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/][^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]c)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("?*****?c") |> sort == ["abc"]
   end
 
   test "?***?****c" do
-    matcher = compile("?***?****c")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/][^/]*?[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/]*?[^/]*?c)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("?***?****c") |> sort == ["abc"]
   end
 
   test "?***?****?" do
-    matcher = compile("?***?****?")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/][^/]*?[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/]*?[^/]*?[^/])$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("?***?****?") |> sort == ["abc"]
   end
 
   test "?***?****" do
-    matcher = compile("?***?****")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/][^/]*?[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/]*?[^/]*?)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("?***?****") |> sort == ["abc"]
   end
 
   test "*******c" do
-    matcher = compile("*******c")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?c)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("*******c") |> sort == ["abc"]
   end
 
   test "*******?" do
-    matcher = compile("*******?")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/])$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == ["abc"]
+    assert ["abc"] |> filter("*******?") |> sort == ["abc"]
   end
 
   test "a*cd**?**??k" do
-    matcher = compile("a*cd**?**??k")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?cd[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/][^/]k)$")
-
-    assert ["abcdecdhjk"] |> fnfilter(matcher) |> sort == ["abcdecdhjk"]
+    assert ["abcdecdhjk"] |> filter("a*cd**?**??k") |> sort == ["abcdecdhjk"]
   end
 
   test "a**?**cd**?**??k" do
-    matcher = compile("a**?**cd**?**??k")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^/]*?[^/][^/]*?[^/]*?cd[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/][^/]k)$")
-
-    assert ["abcdecdhjk"] |> fnfilter(matcher) |> sort == ["abcdecdhjk"]
+    assert ["abcdecdhjk"] |> filter("a**?**cd**?**??k") |> sort == ["abcdecdhjk"]
   end
 
   test "a**?**cd**?**??k***" do
-    matcher = compile("a**?**cd**?**??k***")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^/]*?[^/][^/]*?[^/]*?cd[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/][^/]k[^/]*?[^/]*?[^/]*?)$")
-
-    assert ["abcdecdhjk"] |> fnfilter(matcher) |> sort == ["abcdecdhjk"]
+    assert ["abcdecdhjk"] |> filter("a**?**cd**?**??k***") |> sort == ["abcdecdhjk"]
   end
 
   test "a**?**cd**?**??***k" do
-    matcher = compile("a**?**cd**?**??***k")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^/]*?[^/][^/]*?[^/]*?cd[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/][^/][^/]*?[^/]*?[^/]*?k)$")
-
-    assert ["abcdecdhjk"] |> fnfilter(matcher) |> sort == ["abcdecdhjk"]
+    assert ["abcdecdhjk"] |> filter("a**?**cd**?**??***k") |> sort == ["abcdecdhjk"]
   end
 
   test "a**?**cd**?**??***k**" do
-    matcher = compile("a**?**cd**?**??***k**")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^/]*?[^/][^/]*?[^/]*?cd[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/][^/][^/]*?[^/]*?[^/]*?k[^/]*?[^/]*?)$")
-
-    assert ["abcdecdhjk"] |> fnfilter(matcher) |> sort == ["abcdecdhjk"]
+    assert ["abcdecdhjk"] |> filter("a**?**cd**?**??***k**") |> sort == ["abcdecdhjk"]
   end
 
   test "a****c**?**??*****" do
-    matcher = compile("a****c**?**??*****")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^/]*?[^/]*?[^/]*?c[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/][^/][^/]*?[^/]*?[^/]*?[^/]*?[^/]*?)$")
-
-    assert ["abcdecdhjk"] |> fnfilter(matcher) |> sort == ["abcdecdhjk"]
+    assert ["abcdecdhjk"] |> filter("a****c**?**??*****") |> sort == ["abcdecdhjk"]
   end
 
   test "[-abc]" do
-    matcher = compile("[-abc]")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[-abc])$")
-
-    assert ["-"] |> fnfilter(matcher) |> sort == ["-"]
+    assert ["-"] |> filter("[-abc]") |> sort == ["-"]
   end
 
   test "[abc-]" do
-    matcher = compile("[abc-]")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[abc-])$")
-
-    assert ["-"] |> fnfilter(matcher) |> sort == ["-"]
+    assert ["-"] |> filter("[abc-]") |> sort == ["-"]
   end
 
   test "\\" do
-    matcher = compile("\\")
-
-    # assert matcher.regex == Regex.compile!("^(?:\\\\)$")
-
-    assert ["\\"] |> fnfilter(matcher) |> sort == ["\\"]
+    assert ["\\"] |> filter("\\") |> sort == ["\\"]
   end
 
   test "[\\\\]" do
-    matcher = compile("[\\\\]")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[\\\\])$")
-
-    assert ["\\"] |> fnfilter(matcher) |> sort == ["\\"]
+    assert ["\\"] |> filter("[\\\\]") |> sort == ["\\"]
   end
 
   test "[[]" do
-    matcher = compile("[[]")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[\\[])$")
-
-    assert ["["] |> fnfilter(matcher) == ["["]
+    assert ["["] |> filter("[[]") == ["["]
   end
 
   test "[" do
-    matcher = compile("[")
-
-    # assert matcher.regex == Regex.compile!("^(?:\\[)$")
-
-    assert ["["] |> fnfilter(matcher) == ["["]
+    assert ["["] |> filter("[") == ["["]
   end
 
   test "[*" do
-    matcher = compile("[*")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)\\[(?!\\.)(?=.)[^/]*?)$")
-
-    assert ["[abc"] |> fnfilter(matcher) == ["[abc"]
+    assert ["[abc"] |> filter("[*") == ["[abc"]
   end
 
   # # a right bracket shall lose its special meaning and
@@ -238,91 +138,47 @@ defmodule AppleBashGlobTest do
   # # first in the list.  -- POSIX.2 2.8.3.2
 
   test "[]]" do
-    matcher = compile("[]]")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[\\]])$")
-
-    assert ["]"] |> fnfilter(matcher) |> sort == ["]"]
+    assert ["]"] |> filter("[]]") |> sort == ["]"]
   end
 
   test "[]-]" do
-    matcher = compile("[]-]")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[\\]-])$")
-
-    assert ["]"] |> fnfilter(matcher) |> sort == ["]"]
+    assert ["]"] |> filter("[]-]") |> sort == ["]"]
   end
 
   test "[a-\z]" do
-    matcher = compile("[a-\z]")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[a-z])$")
-
-    assert ["p"] |> fnfilter(matcher) |> sort ==["p"]
+    assert ["p"] |> filter("[a-\z]") |> sort ==["p"]
   end
 
   test "??**********?****?" do
-    matcher = compile("??**********?****?")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/][^/][^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/]*?[^/]*?[^/])$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == []
+    assert ["abc"] |> filter("??**********?****?") |> sort == []
   end
 
   test "??**********?****c" do
-    matcher = compile("??**********?****c")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/][^/][^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/]*?[^/]*?c)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == []
+    assert ["abc"] |> filter("??**********?****c") |> sort == []
   end
 
   test "?************c****?****" do
-    matcher = compile("?************c****?****")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/][^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?c[^/]*?[^/]*?[^/]*?[^/]*?[^/][^/]*?[^/]*?[^/]*?[^/]*?)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == []
+    assert ["abc"] |> filter("?************c****?****") |> sort == []
   end
 
   test "*c*?**" do
-    matcher = compile("*c*?**")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/]*?c[^/]*?[^/][^/]*?[^/]*?)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == []
+    assert ["abc"] |> filter("*c*?**") |> sort == []
   end
 
   test "a*****c*?**" do
-    matcher = compile("a*****c*?**")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?c[^/]*?[^/][^/]*?[^/]*?)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == []
+    assert ["abc"] |> filter("a*****c*?**") |> sort == []
   end
 
   test "a********???*******" do
-    matcher = compile("a********???*******")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/][^/][^/][^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?[^/]*?)$")
-
-    assert ["abc"] |> fnfilter(matcher) |> sort == []
+    assert ["abc"] |> filter("a********???*******") |> sort == []
   end
 
   test "[]" do
-    matcher = compile("[]")
-
-    # assert matcher.regex == Regex.compile!("^(?:\\[\\])$")
-
-    assert ["a"] |> fnfilter(matcher) |> sort == []
+    assert ["a"] |> filter("[]") |> sort == []
   end
 
   test "[abc" do
-    matcher = compile("[abc")
-
-    # assert matcher.regex == Regex.compile!("^(?:\\[abc)$")
-
-    assert ["["] |> fnfilter(matcher) |> sort == []
+    assert ["["] |> filter("[abc") |> sort == []
   end
 
 end

@@ -3,95 +3,24 @@ defmodule ExMinimatch.Compiler do
   import ExBraceExpansion
   import ExMinimatch.Helper
 
-  @qmark "[^/]"
-
-  @globstar :globstar
-
-  # * => any number of characters
-  @star "#{@qmark}*?"
-
-  # ** when dots are allowed.  Anything goes, except .. and .
-  # not (^ or / followed by one or two dots followed by $ or /),
-  # followed by anything, any number of times.
-  @two_star_dot "(?:(?!(?:\\\/|^)(?:\\.{1,2})($|\\\/)).)*?"
-
-  # not a ^ or / followed by a dot,
-  # followed by anything, any number of times.
-  @two_star_no_dot "(?:(?!(?:\\\/|^)\\.).)*?"
-
-  # characters that need to be escaped in RegExp.
-  @re_specials [ "(", ")", ".", "*", "{", "}", "+", "?", "[", "]", "^", "$", "\\", "!" ]
-
-  @slash_split ~r/\/+/
-
-  # def compile_matcher(glob, options) do
-  #   regex = if short_circuit_comments(glob, options) do
-  #     false
-  #   else
-  #     {regex_parts_set, negate} = make_re(glob, options)
-
-  #     if len(regex_parts_set) == 0 do
-  #       false
-  #     else
-  #       two_star = cond do
-  #         options[:noglobstar] -> @star
-  #         options[:dot] -> @two_star_dot
-  #         true -> @two_star_no_dot
-  #       end
-
-  #       flags = if options[:nocase], do: "i", else: ""
-
-  #       regex_parts_set
-  #       |> Enum.map(fn regex_parts ->
-  #           regex_parts
-  #           |> Enum.map(fn regex_part ->
-  #               cond do
-  #                 regex_part == @globstar -> two_star
-  #                 is_binary(regex_part) -> regex_escape(regex_part)
-  #                 true ->
-  #                   {_, src} = regex_part
-  #                   src
-  #               end
-  #             end)
-  #           |> Enum.join("\\\/")
-  #         end)
-  #       |> Enum.join("|")
-  #       |> transform(fn re ->
-  #           "^(?:" <> re <> ")$"
-  #         end)
-  #       |> transform(fn re ->
-  #           if negate do
-  #             "^(?!" <> re <> ").*$"
-  #           else
-  #             re
-  #           end
-  #         end)
-  #       |> transform(fn re ->
-  #           case Regex.compile(re, flags) do
-  #             {:ok, regex} -> regex
-  #             _ -> false
-  #           end
-  #         end)
-  #     end
-  #   end
-
-  #   %{
-  #     glob: glob,
-  #     regex: regex,
-  #     options: options
-  #   }
-  # end
+  @qmark ExMinimatcher.qmark
+  @globstar ExMinimatcher.globstar
+  @star ExMinimatcher.star
+  @two_star_dot ExMinimatcher.two_star_dot
+  @two_star_no_dot ExMinimatcher.two_star_no_dot
+  @re_specials ExMinimatcher.re_specials
+  @slash_split ExMinimatcher.slash_split
 
   def compile_matcher(glob, options) do
     {regex_parts_set, negate} = if short_circuit_comments(glob, options) do
       {[], false}
     else
-      {regex_parts_set, negate} = make_re(glob, options)
+      make_re(glob, options)
     end
 
-    %{
+    %ExMinimatcher{
       glob: glob,
-      regex_parts_set: regex_parts_set,
+      pattern: regex_parts_set,
       negate: negate,
       options: options
     }
@@ -603,116 +532,4 @@ defmodule ExMinimatch.Compiler do
     |> move_to_next
     |> parse
   end
-
-  def match_file(file, regex_parts_set, negate, options) do
-    info {"match_file", file, regex_parts_set, negate, options}, options
-
-    split_file_parts = Regex.split(@slash_split, file)
-    basename = Path.basename(file)
-
-    found = Enum.any? regex_parts_set, fn regex_parts ->
-      file_parts = if options[:match_base] and length(regex_parts) == 1, do: [basename], else: split_file_parts
-
-      match_regex_parts(regex_parts, file_parts, options)
-    end
-
-    if found, do: not negate, else: negate
-  end
-
-  def match_regex_parts(regex_parts, file_parts, options) do
-    debug {"match_regex_parts", file_parts, regex_parts, options}, options
-
-    %{
-      file_parts: file_parts,
-      regex_parts: regex_parts,
-      fi: 0,
-      ri: 0,
-      fl: length(file_parts),
-      rl: length(regex_parts),
-      f: at(file_parts, 0),
-      r: at(regex_parts, 0),
-      options: options
-    }
-    |> match_regex_parts
-  end
-
-  # ran out of regex and file parts at the same time, which is a match
-  def match_regex_parts(%{fi: fi, ri: ri, fl: fl, rl: rl}) when fi == fl and ri == rl, do: true
-
-  # ran out of file parts but still regex left, no match
-  def match_regex_parts(%{fi: fi, fl: fl}) when fi == fl, do: false
-
-  # ran out of pattern but still file parts left
-  def match_regex_parts(%{fi: fi, ri: ri, fl: fl, rl: rl} = state) when ri == rl do
-    # is match only if the file part is the last one and it is ""
-    fi == fl - 1 && at(state[:file_parts], fi) == ""
-  end
-
-  # current regex is a **, but it's also the last regex, and since ** matches
-  # everything, true unless dots are found (except if dot: true is requested)
-  def match_regex_parts(%{r: r, ri: ri, rl: rl, fi: fi, fl: fl, file_parts: file_parts, options: options}) when r == @globstar and ri + 1 == rl do
-    dot_found = Enum.find fi..(fl-1), fn i ->
-      file_part_i = at(file_parts, i)
-
-      file_part_i in [".", ".."] or (not options[:dot] and String.first(file_part_i) == ".")
-    end
-
-    dot_found == nil
-  end
-
-  # current regex is a **, and not the last regex, then try swallow file parts
-  # match on the next pattern
-  def match_regex_parts(%{r: r, fi: fi, ri: ri} = state) when r == @globstar do
-    swallow_and_match_next_regex_part(state, fi)
-  end
-
-  def match_regex_parts(%{f: f, r: r, fi: fi, ri: ri, file_parts: file_parts, regex_parts: regex_parts, options: options} = state) do
-    hit = if is_binary(r) do
-      if options[:nocase], do: String.downcase(f) == String.downcase(r), else: f == r
-    else
-      Regex.match?(r, f)
-    end
-
-    if not hit do
-      false
-    else
-      state
-      |> merge(%{
-          fi: fi + 1,
-          ri: ri + 1,
-          f: at(file_parts, fi + 1),
-          r: at(regex_parts, ri + 1)
-        })
-      |> match_regex_parts
-    end
-  end
-
-  def swallow_and_match_next_regex_part(%{fl: fl} = state, fr) when fr < fl do
-    %{
-      ri: ri,
-      rl: rl,
-      file_parts: file_parts,
-      regex_parts: regex_parts,
-      options: %{
-        dot: dot
-      } = options
-    } = state
-
-    rest_of_regex_parts_from_next = slice(regex_parts, ri + 1, rl)
-
-    rest_of_file_parts = slice(file_parts, fr, fl)
-
-    swallowee = at(file_parts, fr)
-
-    cond do
-      match_regex_parts(rest_of_regex_parts_from_next, rest_of_file_parts, options) ->
-        true
-      swallowee in [".", ".."] or (String.starts_with?(swallowee, ".") and not dot) ->
-        swallow_and_match_next_regex_part(state, fl) # recurse to terminate
-      true ->
-        swallow_and_match_next_regex_part(state, fr + 1) # recurse to next file part
-    end
-  end
-
-  def swallow_and_match_next_regex_part(%{fl: fl}, fr) when fl == fr, do: false
 end

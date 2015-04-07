@@ -1,43 +1,27 @@
 defmodule NegationTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
-  import ExMinimatch, only: [match: 2, match: 3, compile: 1, compile: 2, fnmatch: 2, fnfilter: 2]
+  import ExMinimatch
   import Enum, only: [sort: 1]
 
-  IO.puts "Test cases for: Negation"
+  # IO.puts "Test cases for: Negation"
 
   @files ["d", "e", "!ab", "!abc", "a!b", "\\!a"]
 
   test "anything that is NOT a* matches" do
-    matcher = compile("!a*")
-
-    # assert matcher.regex == Regex.compile!("^(?!^(?:(?=.)a[^/]*?)$).*$")
-
-    assert @files |> fnfilter(matcher) |> sort == ["\\!a", "d", "e", "!ab", "!abc"] |> sort
+    assert @files |> filter("!a*") |> sort == ["\\!a", "d", "e", "!ab", "!abc"] |> sort
   end
 
   test "anything that IS !a* matches" do
-    matcher = compile("!a*", %{nonegate: true})
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)\\!a[^/]*?)$")
-
-    assert @files |> fnfilter(matcher) |> sort == ["!ab", "!abc"] |> sort
+    assert @files |> filter("!a*", %{nonegate: true}) |> sort == ["!ab", "!abc"] |> sort
   end
 
   test "anything that IS a* matches" do
-    matcher = compile("!!a*")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?=.)a[^/]*?)$")
-
-    assert @files |> fnfilter(matcher) |> sort == ["a!b"]
+    assert @files |> filter("!!a*") |> sort == ["a!b"]
   end
 
   test "anything that is NOT !a* matches" do
-    matcher = compile("!\\!a*")
-
-    # assert matcher.regex == Regex.compile!("^(?!^(?:(?=.)\\!a[^/]*?)$).*$")
-
-    assert @files |> fnfilter(matcher) |> sort == ["a!b", "d", "e", "\\!a"] |> sort
+    assert @files |> filter("!\\!a*") |> sort == ["a!b", "d", "e", "\\!a"] |> sort
   end
 
   # negation nestled within a pattern
@@ -50,10 +34,6 @@ defmodule NegationTest do
           "boo.js.boo"]
 
   test "*.!(js)" do
-    matcher = compile("*.!(js)")
-
-    # assert matcher.regex == Regex.compile!("^(?:(?!\\.)(?=.)[^/]*?\\.(?:(?!js)[^/]*?))$")
-
-    assert @files |> fnfilter(matcher) |> sort == ["foo.bar", "foo.", "boo.js.boo"] |> sort
+    assert @files |> filter("*.!(js)") |> sort == ["foo.bar", "foo.", "boo.js.boo"] |> sort
   end
 end

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ExMinimatch.Compiler</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
+    <link rel="stylesheet" href="css/elixir.css" type="text/css" media="screen" charset="utf-8" />
+    <script type="text/javascript" charset="utf-8">
+      relpath = '';
+      if (relpath != '') relpath += '/';
+    </script>
+
+    <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/highlight.pack.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      hljs.initHighlightingOnLoad();
+      hljs.configure({languages: []}); //disable autodetect
+    </script>
+  </head>
+
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+
+    <section id="content">
+      <div class="breadcrumbs">ex_minimatch v0.0.1 &rarr; <a href="overview.html">Overview</a> &rarr; <a href="ExMinimatch.html">ExMinimatch</a> &rarr; <a href="ExMinimatch.Compiler.html">Compiler</a></div>
+      <h1>
+        ExMinimatch.Compiler
+        
+      </h1>
+
+      <ul class="summary_links">
+        
+          <li><a href="#summary">Summary</a></li>
+        
+        
+        
+          <li><a href="#functions_details">Functions</a></li>
+        
+        
+        
+      </ul>
+
+      
+
+      
+
+      
+        <h2 id="summary">Summary<span class="detail_header_links"><a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a></span></h2>
+        <table class="summary">
+          <tr>
+  <td class="summary_signature"><a href="#clear_state_char/1">clear_state_char(state)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#compile_matcher/2">compile_matcher(glob, options)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#continue/1">continue(state)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#expand_braces/2">expand_braces(pattern, options)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#finish_parse/1">finish_parse(arg1)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#glob_unescape/1">glob_unescape(s)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#handle_dot_start/1">handle_dot_start(state)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#handle_open_class/1">handle_open_class(state)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#handle_trailing_things/1">handle_trailing_things(state)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#handle_weird_end/1">handle_weird_end(state)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#make_re/2">make_re(pattern, options)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#move_to_next/1">move_to_next(state)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#parse/1">parse(state)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#parse_glob_to_re/2">parse_glob_to_re(glob_pattern, arg2)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#parse_glob_to_re/3">parse_glob_to_re(glob_pattern, options, is_sub \\ false)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#parse_negate/2">parse_negate(pattern, arg2)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#regex_escape/1">regex_escape(s)</a></td>
+  
+</tr>
+<tr>
+  <td class="summary_signature"><a href="#short_circuit_comments/2">short_circuit_comments(pattern, options)</a></td>
+  
+</tr>
+
+        </table>
+      
+
+      
+
+      
+        <section id="functions_details" class="details_list">
+          <h2>Functions</h2>
+          <section class="detail">
+  <div class="detail_header" id="clear_state_char/1">
+    <span class="signature"><strong>clear_state_char(state)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#clear_state_char/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="compile_matcher/2">
+    <span class="signature"><strong>compile_matcher(glob, options)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#compile_matcher/2" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="continue/1">
+    <span class="signature"><strong>continue(state)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#continue/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="expand_braces/2">
+    <span class="signature"><strong>expand_braces(pattern, options)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#expand_braces/2" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="finish_parse/1">
+    <span class="signature"><strong>finish_parse(arg1)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#finish_parse/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="glob_unescape/1">
+    <span class="signature"><strong>glob_unescape(s)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#glob_unescape/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="handle_dot_start/1">
+    <span class="signature"><strong>handle_dot_start(state)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#handle_dot_start/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="handle_open_class/1">
+    <span class="signature"><strong>handle_open_class(state)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#handle_open_class/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="handle_trailing_things/1">
+    <span class="signature"><strong>handle_trailing_things(state)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#handle_trailing_things/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="handle_weird_end/1">
+    <span class="signature"><strong>handle_weird_end(state)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#handle_weird_end/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="make_re/2">
+    <span class="signature"><strong>make_re(pattern, options)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#make_re/2" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="move_to_next/1">
+    <span class="signature"><strong>move_to_next(state)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#move_to_next/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="parse/1">
+    <span class="signature"><strong>parse(state)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#parse/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="parse_glob_to_re/2">
+    <span class="signature"><strong>parse_glob_to_re(glob_pattern, arg2)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#parse_glob_to_re/2" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="parse_glob_to_re/3">
+    <span class="signature"><strong>parse_glob_to_re(glob_pattern, options, is_sub \\ false)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#parse_glob_to_re/3" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="parse_negate/2">
+    <span class="signature"><strong>parse_negate(pattern, arg2)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#parse_negate/2" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="regex_escape/1">
+    <span class="signature"><strong>regex_escape(s)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#regex_escape/1" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+<section class="detail">
+  <div class="detail_header" id="short_circuit_comments/2">
+    <span class="signature"><strong>short_circuit_comments(pattern, options)</strong></span>
+    <div class="detail_header_links">
+      <span class="detail_type">(function)</span>
+      <a href="#short_circuit_comments/2" class="detail_link" title="Link to this function">#</a>
+      <a class="to_top_link" href="#content" title="To the top of the page">&uarr;</a>
+    </div>
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+  
+</section>
+
+        </section>
+      
+
+      
+
+      
+    </section>
+  </body>
+</html>

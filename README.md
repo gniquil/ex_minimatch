@@ -10,9 +10,6 @@ Quick examples:
     iex> import ExMinimatch
     nil
 
-    iex> match("**/*{1..2}{a,b}.{png,jpg}", "asdf/pic2c.jpg")
-    false
-
     iex> match("**/*{1..2}{a,b}.{png,jpg}", "asdf/pic2a.jpg")
     true
 
@@ -20,6 +17,15 @@ Quick examples:
     true
 
     iex> ["me.jpg", "images/me.png", "images/you.svg"] |> filter("**/*.{png,jpg}")
+    ["me.jpg", "images/me.png"]
+
+Compiled forms below allows us to cache the %ExMinimatcher{} struct when used
+against large number of files repeated.
+
+    iex> compile("**/*{1..2}{a,b}.{png,jpg}") |> fnmatch("asdf/pic2a.jpg")
+    true
+
+    iex> ["me.jpg", "images/me.png", "images/you.svg"] |> fnfilter(compile("**/*.{png,jpg}"))
     ["me.jpg", "images/me.png"]
 
 ExMinimatch is a port of the [minimatch](https://github.com/isaacs/minimatch)

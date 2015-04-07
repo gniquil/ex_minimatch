@@ -22,10 +22,10 @@ Quick examples:
 Compiled forms below allows us to cache the %ExMinimatcher{} struct when used
 against large number of files repeated.
 
-    iex> compile("**/*{1..2}{a,b}.{png,jpg}") |> fnmatch("asdf/pic2a.jpg")
+    iex> compile("**/*{1..2}{a,b}.{png,jpg}") |> match("asdf/pic2a.jpg")
     true
 
-    iex> ["me.jpg", "images/me.png", "images/you.svg"] |> fnfilter(compile("**/*.{png,jpg}"))
+    iex> ["me.jpg", "images/me.png", "images/you.svg"] |> filter(compile("**/*.{png,jpg}"))
     ["me.jpg", "images/me.png"]
 
 ExMinimatch is a port of the [minimatch](https://github.com/isaacs/minimatch)

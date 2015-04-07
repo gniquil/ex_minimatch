@@ -25,10 +25,10 @@ defmodule ExMinimatch do
   Compiled forms below allows us to cache the %ExMinimatcher{} struct when used
   against large number of files repeated.
 
-      iex> compile("**/*{1..2}{a,b}.{png,jpg}") |> fnmatch("asdf/pic2a.jpg")
+      iex> compile("**/*{1..2}{a,b}.{png,jpg}") |> match("asdf/pic2a.jpg")
       true
 
-      iex> ["me.jpg", "images/me.png", "images/you.svg"] |> fnfilter(compile("**/*.{png,jpg}"))
+      iex> ["me.jpg", "images/me.png", "images/you.svg"] |> filter(compile("**/*.{png,jpg}"))
       ["me.jpg", "images/me.png"]
 
   ExMinimatch is a port of the [minimatch](https://github.com/isaacs/minimatch)
@@ -47,7 +47,7 @@ defmodule ExMinimatch do
 
   - man sh
   - man bash
-  - man 3 fnmatch
+  - man 3 match
   - man 5 gitignore
 
   ## Options
@@ -112,7 +112,7 @@ defmodule ExMinimatch do
 
   @doc """
   Return a compiled %ExMinimatcher{} struct, which can be used in conjunction
-  with `fnmatch/2`, 'fnmatch/3', or `fnfilter/2` to match files.
+  with `match/2`, 'match/3', or `filter/2` to match files.
 
   This purpose of this function is to save time by precompiling the glob
   pattern.
@@ -143,23 +143,23 @@ defmodule ExMinimatch do
 
   ## Examples
 
-      iex> compile("**/*.{png,jpg}") |> fnmatch("me.jpg")
+      iex> compile("**/*.{png,jpg}") |> match("me.jpg")
       true
-      iex> compile("**/*.{png,jpg}") |> fnmatch("images/me.png")
+      iex> compile("**/*.{png,jpg}") |> match("images/me.png")
       true
-      iex> compile("**/*.{png,jpg}") |> fnmatch("images/you.svg")
+      iex> compile("**/*.{png,jpg}") |> match("images/you.svg")
       false
-      iex> ["me.jpg", "images/me.png", "images/you.svg"] |> fnfilter(compile("**/*.{png,jpg}"))
+      iex> ["me.jpg", "images/me.png", "images/you.svg"] |> filter(compile("**/*.{png,jpg}"))
       ["me.jpg", "images/me.png"]
 
   """
-  def fnmatch(%ExMinimatcher{pattern: pattern}, file) when pattern == [] and file == "", do: true
-  def fnmatch(%ExMinimatcher{pattern: pattern}, _file) when pattern == [], do: false
-  def fnmatch(matcher, file), do: ExMinimatch.Matcher.match_file(file, matcher)
+  def match(%ExMinimatcher{pattern: pattern}, file) when pattern == [] and file == "", do: true
+  def match(%ExMinimatcher{pattern: pattern}, _file) when pattern == [], do: false
+  def match(%ExMinimatcher{} = matcher, file), do: ExMinimatch.Matcher.match_file(file, matcher)
 
   @doc """
   Return true if the file matches the glob. This is a convenience function that
-  is literally `glob |> compile(options) |> fnmatch(file)`
+  is literally `glob |> compile(options) |> match(file)`
 
   Use this for one off matching, as the glob is recompiled every time this is
   called.
@@ -175,22 +175,22 @@ defmodule ExMinimatch do
       true
 
   """
-  def match(glob, file), do: match(glob, file, %{})
-  def match(glob, file, options), do: glob |> compile(options) |> fnmatch(file)
+  def match(glob, file) when is_binary(glob), do: match(glob, file, %{})
+  def match(glob, file, options) when is_binary(glob), do: glob |> compile(options) |> match(file)
 
   @doc """
   Returns a list of files filtered by the compiled %ExMinimatcher{} struct.
 
-  Note the collection argument comes first, different from `fnmatch`. This is
+  Note the collection argument comes first, different from `match`. This is
   more suitable for piping collections.
 
   ## Examples
 
-      iex> ["me.jpg", "images/me.png", "images/you.svg"] |> fnfilter(compile("**/*.{png,jpg}"))
+      iex> ["me.jpg", "images/me.png", "images/you.svg"] |> filter(compile("**/*.{png,jpg}"))
       ["me.jpg", "images/me.png"]
 
   """
-  def fnfilter(files, matcher), do: files |> Enum.filter(&fnmatch(matcher, &1))
+  def filter(files, %ExMinimatcher{} = matcher), do: files |> Enum.filter(&match(matcher, &1))
 
   @doc """
   return a list of files that match the given pattern. This is a convenience
@@ -207,7 +207,7 @@ defmodule ExMinimatch do
       ["qwer/pic1a.png", "qwer/asdf/pic2a.png"]
 
   """
-  def filter(files, pattern), do: filter(files, pattern, %{})
-  def filter(files, pattern, options), do: files |> fnfilter(compile(pattern, options))
+  def filter(files, pattern) when is_binary(pattern), do: filter(files, pattern, %{})
+  def filter(files, pattern, options) when is_binary(pattern), do: files |> filter(compile(pattern, options))
 
 end

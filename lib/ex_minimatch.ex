@@ -31,6 +31,14 @@ defmodule ExMinimatch do
       iex> ["me.jpg", "images/me.png", "images/you.svg"] |> filter(compile("**/*.{png,jpg}"))
       ["me.jpg", "images/me.png"]
 
+  To make things easier, we can also use the `~g` sigil to streamline compilation
+
+      iex> ~g"**/*.png"i == compile("**/*.png", %{nocase: true}) # case insensitive
+      true
+
+      iex> ~g"**/*.png"en == compile("**/*.png", %{log: :debug}) # with logging
+      true
+
   ExMinimatch is a port of the [minimatch](https://github.com/isaacs/minimatch)
   javascript project. It is a close port but not exactly the same. See
   "Comparison to minimatch.js" section below.
@@ -145,10 +153,13 @@ defmodule ExMinimatch do
 
       iex> compile("**/*.{png,jpg}") |> match("me.jpg")
       true
+
       iex> compile("**/*.{png,jpg}") |> match("images/me.png")
       true
+
       iex> compile("**/*.{png,jpg}") |> match("images/you.svg")
       false
+
       iex> ["me.jpg", "images/me.png", "images/you.svg"] |> filter(compile("**/*.{png,jpg}"))
       ["me.jpg", "images/me.png"]
 
@@ -210,4 +221,43 @@ defmodule ExMinimatch do
   def filter(files, pattern) when is_binary(pattern), do: filter(files, pattern, %{})
   def filter(files, pattern, options) when is_binary(pattern), do: files |> filter(compile(pattern, options))
 
+
+  @doc """
+  return a compiled %ExMinimatcher{} struct, available sigil modifier are
+
+  - d: dot
+  - i: nocase
+  - n: log: :info
+  - e: log: :debug (overrides n if both present)
+
+  ## Examples
+
+      iex> ~g"**/*.png"d == compile("**/*.png", %{dot: true})
+      true
+
+      iex> ~g"**/*.png"i == compile("**/*.png", %{nocase: true})
+      true
+
+      iex> ~g"**/*.png"en == compile("**/*.png", %{log: :debug})
+      true
+
+  """
+  def sigil_g(glob, modifiers) do
+    log = cond do
+      ?e in modifiers ->
+        :debug
+      ?n in modifiers ->
+        :info
+      true ->
+        nil
+    end
+
+    options = %{
+      dot: ?d in modifiers,
+      nocase: ?i in modifiers,
+      log: log
+    }
+
+    compile(glob, options)
+  end
 end

@@ -25,9 +25,8 @@ defmodule ExMinimatch do
     compile_matcher(glob, options)
   end
 
-  def fnmatch(%ExMinimatcher{pattern: pattern}, "") when pattern == [], do: true
-  def fnmatch(%ExMinimatcher{pattern: pattern}, _file) when not pattern, do: false
-  # def fnmatch(%{regex: regex}, file), do: Regex.match?(regex, file)
+  def fnmatch(%ExMinimatcher{pattern: pattern}, file) when pattern == [] and file == "", do: true
+  def fnmatch(%ExMinimatcher{pattern: pattern}, _file) when pattern == [], do: false
   def fnmatch(matcher, file), do: match_file(file, matcher)
 
   @doc """

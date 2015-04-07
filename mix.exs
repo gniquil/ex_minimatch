@@ -47,7 +47,7 @@ defmodule ExMinimatch.Mixfile do
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
       contributors: ["Frank Liu"],
       links: %{"GitHub" => "https://github.com/gniquil/ex_minimatch"},
-      licenses: ["MIT"],
+      licenses: ["MIT"]
     ]
   end
 end

@@ -30,7 +30,7 @@ defmodule ExMinimatch.Mixfile do
     [
       {:ex_brace_expansion, "~> 0.0.1"},
       {:ex_doc, "~> 0.7", only: :dev},
-      {:markdown, github: "devinus/markdown"}
+      {:markdown, github: "devinus/markdown", only: :dev, runtime: false}
     ]
   end
 

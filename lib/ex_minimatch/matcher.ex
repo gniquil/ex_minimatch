@@ -1,5 +1,4 @@
 defmodule ExMinimatch.Matcher do
-  import Dict, only: [merge: 2]
   import ExMinimatch.Helper
 
   @globstar ExMinimatcher.globstar()
@@ -78,12 +77,12 @@ defmodule ExMinimatch.Matcher do
       false
     else
       state
-      |> merge(%{
-          fi: fi + 1,
-          ri: ri + 1,
-          f: at(file_parts, fi + 1),
-          r: at(regex_parts, ri + 1)
-        })
+      |> Map.merge(%{
+        fi: fi + 1,
+        ri: ri + 1,
+        f: at(file_parts, fi + 1),
+        r: at(regex_parts, ri + 1)
+      })
       |> match_regex_parts
     end
   end

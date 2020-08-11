@@ -120,18 +120,21 @@ defmodule ExMinimatch do
   For possible glob patterns and available options, please refer to moduledoc.
   """
   def compile(glob), do: compile(glob, %{})
+
   def compile(glob, options) do
-    options = %{
-      dot: false,
-      nocase: false,
-      match_base: false,
-      nonegate: false,
-      noext: false,
-      noglobstar: false,
-      nocomment: false,
-      nobrace: false,
-      log: nil
-    } |> Dict.merge(options)
+    options =
+      %{
+        dot: false,
+        nocase: false,
+        match_base: false,
+        nonegate: false,
+        noext: false,
+        noglobstar: false,
+        nocomment: false,
+        nobrace: false,
+        log: nil
+      }
+      |> Map.merge(options)
 
     ExMinimatch.Compiler.compile_matcher(glob, options)
   end

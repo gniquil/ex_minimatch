@@ -3,11 +3,11 @@ defmodule ExMinimatch.Compiler do
   import ExBraceExpansion
   import ExMinimatch.Helper
 
-  @qmark ExMinimatcher.qmark
-  @globstar ExMinimatcher.globstar
-  @star ExMinimatcher.star
-  @re_specials ExMinimatcher.re_specials
-  @slash_split ExMinimatcher.slash_split
+  @qmark ExMinimatcher.qmark()
+  @globstar ExMinimatcher.globstar()
+  @star ExMinimatcher.star()
+  @re_specials ExMinimatcher.re_specials()
+  @slash_split ExMinimatcher.slash_split()
 
   def compile_matcher(glob, options) do
     {regex_parts_set, negate} = if short_circuit_comments(glob, options) do

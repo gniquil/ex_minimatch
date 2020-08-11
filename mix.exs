@@ -2,12 +2,14 @@ defmodule ExMinimatch.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :ex_minimatch,
-     version: "0.0.1",
-     elixir: "~> 1.0",
-     description: description,
-     package: package,
-     deps: deps]
+    [
+      app: :ex_minimatch,
+      version: "0.0.1",
+      elixir: "~> 1.0",
+      description: description(),
+      package: package(),
+      deps: deps()
+    ]
   end
 
   # Configuration for the OTP application

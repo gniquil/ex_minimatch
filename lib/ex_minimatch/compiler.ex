@@ -160,7 +160,9 @@ defmodule ExMinimatch.Compiler do
     |> continue
   end
 
-  def parse(%{c: c} = state) when c == "/", do: state |> merge %{failed: true}
+  def parse(%{c: c} = state) when c == "/" do
+    state |> merge(%{failed: true})
+  end
 
   def parse(%{c: c} = state) when c == "\\" do
     state

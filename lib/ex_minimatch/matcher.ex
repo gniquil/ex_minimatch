@@ -2,12 +2,7 @@ defmodule ExMinimatch.Matcher do
   import Dict, only: [merge: 2]
   import ExMinimatch.Helper
 
-  @qmark ExMinimatcher.qmark
   @globstar ExMinimatcher.globstar
-  @star ExMinimatcher.star
-  @two_star_dot ExMinimatcher.two_star_dot
-  @two_star_no_dot ExMinimatcher.two_star_no_dot
-  @re_specials ExMinimatcher.re_specials
   @slash_split ExMinimatcher.slash_split
 
   def match_file(file, %ExMinimatcher{pattern: regex_parts_set, negate: negate, options: options}) do

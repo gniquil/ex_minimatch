@@ -6,8 +6,6 @@ defmodule ExMinimatch.Compiler do
   @qmark ExMinimatcher.qmark
   @globstar ExMinimatcher.globstar
   @star ExMinimatcher.star
-  @two_star_dot ExMinimatcher.two_star_dot
-  @two_star_no_dot ExMinimatcher.two_star_no_dot
   @re_specials ExMinimatcher.re_specials
   @slash_split ExMinimatcher.slash_split
 

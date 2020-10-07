@@ -1,5 +1,5 @@
 defmodule ExMinimatch.Compiler do
-  import Dict, only: [merge: 2]
+  import Map, only: [merge: 2]
   import ExBraceExpansion
   import ExMinimatch.Helper
 

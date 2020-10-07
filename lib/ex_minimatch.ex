@@ -131,7 +131,7 @@ defmodule ExMinimatch do
       nocomment: false,
       nobrace: false,
       log: nil
-    } |> Dict.merge(options)
+    } |> Map.merge(options)
 
     ExMinimatch.Compiler.compile_matcher(glob, options)
   end

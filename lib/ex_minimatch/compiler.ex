@@ -1,13 +1,11 @@
 defmodule ExMinimatch.Compiler do
-  import Dict, only: [merge: 2]
+  import Map, only: [merge: 2]
   import ExBraceExpansion
   import ExMinimatch.Helper
 
   @qmark ExMinimatcher.qmark
   @globstar ExMinimatcher.globstar
   @star ExMinimatcher.star
-  @two_star_dot ExMinimatcher.two_star_dot
-  @two_star_no_dot ExMinimatcher.two_star_no_dot
   @re_specials ExMinimatcher.re_specials
   @slash_split ExMinimatcher.slash_split
 
@@ -160,7 +158,9 @@ defmodule ExMinimatch.Compiler do
     |> continue
   end
 
-  def parse(%{c: c} = state) when c == "/", do: state |> merge %{failed: true}
+  def parse(%{c: c} = state) when c == "/" do
+    state |> merge(%{failed: true})
+  end
 
   def parse(%{c: c} = state) when c == "\\" do
     state

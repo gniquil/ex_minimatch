@@ -11,7 +11,7 @@ defmodule ExMinimatch do
   Quick examples:
 
       iex> import ExMinimatch
-      nil
+      ExMinimatch
 
       iex> match("**/*{1..2}{a,b}.{png,jpg}", "asdf/pic2a.jpg")
       true
@@ -131,15 +131,17 @@ defmodule ExMinimatch do
       nocomment: false,
       nobrace: false,
       log: nil
-    } |> Dict.merge(options)
+    } |> Map.merge(options)
 
     ExMinimatch.Compiler.compile_matcher(glob, options)
   end
 
   @doc ~S"""
-  Returns true when file matches the compiled %ExMinimatcher{} struct.
+  Returns true when file matches the glob. The glob can either be a
+  compiled %ExMinimatcher{} struct, or, for convenience, a string
+  that is being compiled on the fly.
 
-  This is intended to be used with `compile`
+  For possible glob patterns and available options, please refer to moduledoc.
 
   ## Examples
 
@@ -152,34 +154,24 @@ defmodule ExMinimatch do
       iex> ["me.jpg", "images/me.png", "images/you.svg"] |> filter(compile("**/*.{png,jpg}"))
       ["me.jpg", "images/me.png"]
 
-  """
-  def match(%ExMinimatcher{pattern: pattern}, file) when pattern == [] and file == "", do: true
-  def match(%ExMinimatcher{pattern: pattern}, _file) when pattern == [], do: false
-  def match(%ExMinimatcher{} = matcher, file), do: ExMinimatch.Matcher.match_file(file, matcher)
-
-  @doc """
-  Return true if the file matches the glob. This is a convenience function that
-  is literally `glob |> compile(options) |> match(file)`
-
-  Use this for one off matching, as the glob is recompiled every time this is
-  called.
-
-  For possible glob patterns and available options, please refer to moduledoc.
-
-  ## Examples
-
       iex> match("**/*.png", "qwer.png")
       true
-
       iex> match("**/*.png", "qwer/qwer.png")
       true
 
   """
+  def match(%ExMinimatcher{pattern: pattern}, file) when pattern == [] and file == "", do: true
+  def match(%ExMinimatcher{pattern: pattern}, _file) when pattern == [], do: false
+  def match(%ExMinimatcher{} = matcher, file), do: ExMinimatch.Matcher.match_file(file, matcher)
   def match(glob, file) when is_binary(glob), do: match(glob, file, %{})
   def match(glob, file, options) when is_binary(glob), do: glob |> compile(options) |> match(file)
 
   @doc """
-  Returns a list of files filtered by the compiled %ExMinimatcher{} struct.
+  Returns a list of files filtered by the glob. The glob can either be a
+  compiled %ExMinimatcher{} struct, or, for convenience, a string
+  that is being compiled on the fly.
+
+  For possible glob patterns and available options, please refer to moduledoc.
 
   Note the collection argument comes first, different from `match`. This is
   more suitable for piping collections.
@@ -189,17 +181,6 @@ defmodule ExMinimatch do
       iex> ["me.jpg", "images/me.png", "images/you.svg"] |> filter(compile("**/*.{png,jpg}"))
       ["me.jpg", "images/me.png"]
 
-  """
-  def filter(files, %ExMinimatcher{} = matcher), do: files |> Enum.filter(&match(matcher, &1))
-
-  @doc """
-  return a list of files that match the given pattern. This is a convenience
-  function
-
-  For possible glob patterns and available options, please refer to moduledoc.
-
-  ## Examples
-
       iex> filter(["qwer.png", "asdf/qwer.png"], "**/*.png")
       ["qwer.png", "asdf/qwer.png"]
 
@@ -207,6 +188,8 @@ defmodule ExMinimatch do
       ["qwer/pic1a.png", "qwer/asdf/pic2a.png"]
 
   """
+
+  def filter(files, %ExMinimatcher{} = matcher), do: files |> Enum.filter(&match(matcher, &1))
   def filter(files, pattern) when is_binary(pattern), do: filter(files, pattern, %{})
   def filter(files, pattern, options) when is_binary(pattern), do: files |> filter(compile(pattern, options))
 

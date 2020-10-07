@@ -5,9 +5,9 @@ defmodule ExMinimatch.Mixfile do
     [app: :ex_minimatch,
      version: "0.0.1",
      elixir: "~> 1.0",
-     description: description,
-     package: package,
-     deps: deps]
+     description: description(),
+     package: package(),
+     deps: deps()]
   end
 
   # Configuration for the OTP application
@@ -29,8 +29,7 @@ defmodule ExMinimatch.Mixfile do
   defp deps do
     [
       {:ex_brace_expansion, "~> 0.0.1"},
-      {:ex_doc, "~> 0.7", only: :dev},
-      {:markdown, github: "devinus/markdown"}
+      {:ex_doc, "~> 0.7", only: :dev}
     ]
   end
 

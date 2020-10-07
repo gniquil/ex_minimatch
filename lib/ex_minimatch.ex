@@ -11,7 +11,7 @@ defmodule ExMinimatch do
   Quick examples:
 
       iex> import ExMinimatch
-      nil
+      ExMinimatch
 
       iex> match("**/*{1..2}{a,b}.{png,jpg}", "asdf/pic2a.jpg")
       true

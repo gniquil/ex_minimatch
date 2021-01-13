@@ -1,11 +1,13 @@
 defmodule ExMinimatch.Mixfile do
   use Mix.Project
 
+  @version "0.0.2"
+
   def project do
     [
       app: :ex_minimatch,
-      version: "0.0.1",
-      elixir: "~> 1.0",
+      version: @version,
+      elixir: "~> 1.10",
       description: description(),
       package: package(),
       deps: deps()

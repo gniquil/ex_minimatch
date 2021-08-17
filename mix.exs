@@ -1,13 +1,17 @@
 defmodule ExMinimatch.Mixfile do
   use Mix.Project
 
+  @version "0.0.2"
+
   def project do
-    [app: :ex_minimatch,
-     version: "0.0.1",
-     elixir: "~> 1.0",
-     description: description,
-     package: package,
-     deps: deps]
+    [
+      app: :ex_minimatch,
+      version: @version,
+      elixir: "~> 1.10",
+      description: description(),
+      package: package(),
+      deps: deps()
+    ]
   end
 
   # Configuration for the OTP application
@@ -28,9 +32,8 @@ defmodule ExMinimatch.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:ex_brace_expansion, "~> 0.0.1"},
-      {:ex_doc, "~> 0.7", only: :dev},
-      {:markdown, github: "devinus/markdown"}
+      {:ex_brace_expansion, github: "hez/ex_brace_expansion", tag: "v0.0.3"},
+      {:ex_doc, "~> 0.7", only: :dev}
     ]
   end
 

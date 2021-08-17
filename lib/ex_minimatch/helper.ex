@@ -8,7 +8,7 @@ defmodule ExMinimatch.Helper do
   end
 
   # preserves the state
-  def tap(state, sideback) do
+  def minimatch_tap(state, sideback) do
     sideback.(state)
 
     state

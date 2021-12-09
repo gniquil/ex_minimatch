@@ -134,15 +134,15 @@ defmodule ExMinimatch.Compiler do
       failed: false
     }
     |> parse
-    |> tap(fn state -> debug {"parse", state}, state[:options] end)
+    |> ExMinimatch.Helper.tap(fn state -> debug {"parse", state}, state[:options] end)
     |> handle_open_class
-    |> tap(fn state -> debug {"handle_open_class", state}, state[:options] end)
+    |> ExMinimatch.Helper.tap(fn state -> debug {"handle_open_class", state}, state[:options] end)
     |> handle_weird_end
-    |> tap(fn state -> debug {"handle_weird_end", state}, state[:options] end)
+    |> ExMinimatch.Helper.tap(fn state -> debug {"handle_weird_end", state}, state[:options] end)
     |> handle_trailing_things
-    |> tap(fn state -> debug {"handle_trailing_things", state}, state[:options] end)
+    |> ExMinimatch.Helper.tap(fn state -> debug {"handle_trailing_things", state}, state[:options] end)
     |> handle_dot_start
-    |> tap(fn state -> debug {"handle_dot_start", state}, state[:options] end)
+    |> ExMinimatch.Helper.tap(fn state -> debug {"handle_dot_start", state}, state[:options] end)
     |> finish_parse
   end
 
@@ -528,7 +528,7 @@ defmodule ExMinimatch.Compiler do
 
   def continue(state) do
     state
-    |> tap(fn %{options: options} = state -> info({"continue", state}, options) end)
+    |> ExMinimatch.Helper.tap(fn %{options: options} = state -> info({"continue", state}, options) end)
     |> move_to_next
     |> parse
   end
